@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Example</title>
+</head>
+<body>
+
+<div id="messages"></div>
+<input type="text" id="message" placeholder="Type your message">
+<button id="send">Send</button>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const messagesDiv = document.getElementById("messages");
+    const websocket = new WebSocket("ws://127.0.0.1:8080");
+
+    websocket.onopen = function(event) {
+        console.log("Připojeno k WebSocketu");
+    };
+
+    websocket.onmessage = function(event) {
+        const message = event.data;
+        messagesDiv.innerHTML = `<p>${message}</p>` + messagesDiv.innerHTML;
+    };
+
+    websocket.onclose = function(event) {
+        if (event.wasClean) {
+            console.log(`Spojení uzavřeno čistě, kód=${event.code}, důvod=${event.reason}`);
+        } else {
+            console.error("Spojení nečekaně uzavřeno");
+        }
+        alert("Odpojeno");
+    };
+
+ 
+    document.getElementById("send").addEventListener("click", function() {
+        const messageInput = document.getElementById("message");
+        const message = messageInput.value;
+        websocket.send(message);
+        messageInput.value = "";  
+    });
+});
+</script>
+
+</body>
+</html>
