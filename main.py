@@ -42,7 +42,7 @@ async def handle_websocket(websocket, path):
             await client.send(f"Client {client_id} disconnected")
 
 async def start_server():
-    ip_address = "127.0.0.1"
+    ip_address = "127.0.0.0"
     port = 8080
     server = await websockets.serve(handle_websocket, ip_address, port)
     print(f"Server started at ws://{ip_address}:{port}")
