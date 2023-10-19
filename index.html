@@ -14,7 +14,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const messagesDiv = document.getElementById("messages");
-    const websocket = new WebSocket("ws://127.0.0.1:8080");
+    const websocket = new WebSocket("wss://websocketikuwu.onrender.com");
 
     websocket.onopen = function(event) {
         console.log("Připojeno k WebSocketu");
