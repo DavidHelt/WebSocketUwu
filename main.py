@@ -3,9 +3,9 @@ import websockets
 import re
 
 connected = set()
-banned_users = set()
+banned_ips = set()
 client_counter = 1
-ban_file = "banned_users.txt"
+
 
 async def handle_websocket(websocket, path):
     global client_counter
@@ -13,6 +13,13 @@ async def handle_websocket(websocket, path):
     client_counter += 1
 
     connected.add((client_id, websocket))
+    client_ip = websocket.remote_address[0]
+
+    if client_ip in banned_ips:
+        await websocket.send("You've been banned for using the forbidden word.")
+        await websocket.close()
+        connected.remove((client_id, websocket))
+        return
 
     try:
         async for message in websocket:
@@ -22,8 +29,7 @@ async def handle_websocket(websocket, path):
                 await websocket.send("You've been banned for using the forbidden word.")
                 await websocket.close()
                 connected.remove((client_id, websocket))
-                banned_users.add(client_id)
-                save_banned_users()
+                banned_ips.add(client_ip)
                 return
 
             for _, client in connected:
@@ -36,7 +42,6 @@ async def handle_websocket(websocket, path):
             await client.send(f"Client {client_id} disconnected")
 
 async def start_server():
-    load_banned_users()
     ip_address = "127.0.0.1"
     port = 8080
     server = await websockets.serve(handle_websocket, ip_address, port)
@@ -47,19 +52,6 @@ async def start_server():
     except asyncio.CancelledError:
         pass
 
-def load_banned_users():
-    try:
-        with open(ban_file, 'r') as file:
-            for line in file:
-                banned_users.add(int(line.strip()))
-    except FileNotFoundError:
-        pass
-
-def save_banned_users():
-    with open(ban_file, 'w') as file:
-        for user_id in banned_users:
-            file.write(f"{user_id}\n")
-
 async def main():
     await start_server()
 
@@ -69,4 +61,18 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Server stopping...")
 
+""""
+async def unban_user(ip_address):
+    if ip_address in banned_ips:
+        banned_ips.remove(ip_address)
+        return True  # User unbanned
+    return False  # User not found in the banned list
 
+
+ip_to_unban = "192.168.56.1"
+if unban_user(ip_to_unban):
+    print(f"User with IP {ip_to_unban} has been unbanned.")
+else:
+    print(f"User with IP {ip_to_unban} is not in the banned list.")
+    
+"""
